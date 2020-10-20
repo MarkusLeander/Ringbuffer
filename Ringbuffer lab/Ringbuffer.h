@@ -9,7 +9,7 @@ using namespace std::chrono_literals;
 template <typename T>
 class Ringbuffer {
  public:
-  Ringbuffer<T>();
+  
   Ringbuffer<T>(int capacity);
   ~Ringbuffer<T>();
 
@@ -35,8 +35,7 @@ class Ringbuffer {
   // condition_variable readCvar;
 };
 
-template <typename T>
-inline Ringbuffer<T>::Ringbuffer() {}
+
 
 template <typename T>
 inline Ringbuffer<T>::Ringbuffer(int capacity) {
@@ -56,13 +55,15 @@ inline void Ringbuffer<T>::put(T c) {
   std::unique_lock<std::mutex> lock(mutex_lock);
   if (!if_full()) {
     buffer[head] = c;
+    head = (head + 1) % bufferSize;
   }
   //buffer[head] = c;
-  if (if_full()) {
-    tail = (tail + 1) % bufferSize;
+  //if (if_full()) {
+  //  tail = (tail + 1) % bufferSize;
+  //}
+  while (if_full()) {
   }
 
-  head = (head + 1) % bufferSize;
 }
 
 template <typename T>
@@ -91,8 +92,6 @@ inline int Ringbuffer<T>::nextIndex(int i) {
 }
 template <typename T>
 void keyboard_input(Ringbuffer<T>* buff) {
- //while (if_full()){
- //}
   T input;
   while (cin >> input) {
     buff->put(input);
@@ -102,7 +101,7 @@ template <typename T>
 void random_input(Ringbuffer<T>* buff) {
   srand(time(NULL));
   while (true) {
-    this_thread::sleep_for(400ms);
+    this_thread::sleep_for(200ms);
     int a = rand() % 10 + 48;
     buff->put(a);
   }
@@ -111,7 +110,7 @@ void random_input(Ringbuffer<T>* buff) {
 template <typename T>
 T console_out(Ringbuffer<T>* buff) {
   while (true) {
-    this_thread::sleep_for(100ms);
+    this_thread::sleep_for(500ms);
     cout << buff->get();
   }
 }
