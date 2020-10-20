@@ -54,11 +54,14 @@ inline Ringbuffer<T>::~Ringbuffer() {
 template <typename T>
 inline void Ringbuffer<T>::put(T c) {
   std::unique_lock<std::mutex> lock(mutex_lock);
-
-  buffer[head] = c;
+  if (!if_full()) {
+    buffer[head] = c;
+  }
+  //buffer[head] = c;
   if (if_full()) {
     tail = (tail + 1) % bufferSize;
   }
+
   head = (head + 1) % bufferSize;
 }
 
@@ -67,7 +70,7 @@ inline T Ringbuffer<T>::get() {
   std::unique_lock<std::mutex> lock(readMutex);
   while (is_empty()) {
   }
-  full = false;
+  //full = false;
   tail = (tail + 1) % bufferSize;
   return buffer[tail];
 }
@@ -88,6 +91,8 @@ inline int Ringbuffer<T>::nextIndex(int i) {
 }
 template <typename T>
 void keyboard_input(Ringbuffer<T>* buff) {
+ //while (if_full()){
+ //}
   T input;
   while (cin >> input) {
     buff->put(input);
@@ -97,7 +102,7 @@ template <typename T>
 void random_input(Ringbuffer<T>* buff) {
   srand(time(NULL));
   while (true) {
-    this_thread::sleep_for(200ms);
+    this_thread::sleep_for(400ms);
     int a = rand() % 10 + 48;
     buff->put(a);
   }
@@ -106,7 +111,7 @@ void random_input(Ringbuffer<T>* buff) {
 template <typename T>
 T console_out(Ringbuffer<T>* buff) {
   while (true) {
-    // this_thread::sleep_for(100ms);
+    this_thread::sleep_for(100ms);
     cout << buff->get();
   }
 }
